@@ -9,6 +9,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDateTime;
+
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -26,6 +28,7 @@ class ItemListControllerTest {
     private WebApplicationContext webApplicationContext;
 
     private static final String POST_URL = "/post";
+    private static final String GET_URL_THREE_MIN_LATER = "/?currentTime=" + LocalDateTime.now().plusMinutes(3);
     private static final String GET_URL = "/";
 
     @AfterEach
@@ -34,28 +37,49 @@ class ItemListControllerTest {
     }
 
     @Test
-    public void happyFlowEmptyList() {
+    public void emptyList() {
         get(GET_URL, "[]");
     }
 
     @Test
-    public void happyFlowSingleItem() throws Exception {
+    public void singleItemDirectly() throws Exception {
         post(POST_URL, "a");
-        get(GET_URL, "[a]");
+        get(GET_URL, "[]");
     }
 
     @Test
-    public void happyFlowSameItem() throws Exception {
+    public void singleItem() throws Exception {
         post(POST_URL, "a");
-        post(POST_URL, "a");
-        get(GET_URL, "[a]");
+        get(GET_URL_THREE_MIN_LATER, "[a]");
     }
 
     @Test
-    public void happyFlowDoubleItem() throws Exception {
+    public void singleItemReset() throws Exception {
+        post(POST_URL, "a");
+        reset();
+        get(GET_URL, "[]");
+    }
+
+    @Test
+    public void sameItem() throws Exception {
+        post(POST_URL, "a");
+        post(POST_URL, "a");
+        get(GET_URL_THREE_MIN_LATER, "[a]");
+    }
+
+    @Test
+    public void doubleItem() throws Exception {
         post(POST_URL, "a");
         post(POST_URL, "b");
-        get(GET_URL, "[a, b]");
+        get(GET_URL_THREE_MIN_LATER, "[a, b]");
+    }
+
+    @Test
+    public void doubleRepeatingItem() throws Exception {
+        post(POST_URL, "a");
+        post(POST_URL, "b");
+        post(POST_URL, "a");
+        get(GET_URL_THREE_MIN_LATER, "[a, b]");
     }
 
     private void post(String url, String body) {
