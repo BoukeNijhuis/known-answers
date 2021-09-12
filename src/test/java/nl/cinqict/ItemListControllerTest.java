@@ -44,13 +44,20 @@ class ItemListControllerTest {
     @Test
     public void singleItemDirectly() throws Exception {
         post(POST_URL, "a");
-        get(GET_URL, "[]");
+        get(GET_URL, "[a]");
     }
 
     @Test
-    public void singleItem() throws Exception {
+    public void doubleItemDirectly() throws Exception {
         post(POST_URL, "a");
-        get(GET_URL_THREE_MIN_LATER, "[a]");
+        post(POST_URL, "b");
+        get(GET_URL, "[a]");
+    }
+
+    @Test
+    public void singleItemAfterSomeTime() throws Exception {
+        post(POST_URL, "a");
+        get(getUrlGivenMinutesLater(1), "[a]");
     }
 
     @Test
@@ -64,14 +71,15 @@ class ItemListControllerTest {
     public void sameItem() throws Exception {
         post(POST_URL, "a");
         post(POST_URL, "a");
-        get(GET_URL_THREE_MIN_LATER, "[a]");
+        get(GET_URL, "[a]");
     }
 
     @Test
     public void doubleItem() throws Exception {
         post(POST_URL, "a");
         post(POST_URL, "b");
-        get(GET_URL_THREE_MIN_LATER, "[a, b]");
+        get(getUrlGivenMinutesLater(0), "[a]");
+        get(getUrlGivenMinutesLater(1), "[a, b]");
     }
 
     @Test
@@ -79,7 +87,7 @@ class ItemListControllerTest {
         post(POST_URL, "a");
         post(POST_URL, "b");
         post(POST_URL, "a");
-        get(GET_URL_THREE_MIN_LATER, "[a, b]");
+        get(getUrlGivenMinutesLater(2), "[a, b]");
     }
 
     private void post(String url, String body) {
@@ -101,4 +109,9 @@ class ItemListControllerTest {
             fail();
         }
     }
+
+    private String getUrlGivenMinutesLater(int minutes) {
+        return GET_URL + "?currentTime=" + LocalDateTime.now().plusMinutes(minutes);
+    }
+
 }
